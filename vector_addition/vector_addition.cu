@@ -63,6 +63,8 @@ int main(int argc, char **argv) {
   dim3 DimGrid((inputLength-1)/256 + 1, 1, 1); //nro of blocks in grid (at least 1 blocks)
   dim3 DimBlock(256, 1, 1);          //nro of threads in blocks
 
+  //What would be the best grid and block sizes to start a kernel call?
+
   wbTime_start(Compute, "Performing CUDA computation");
   //@@ Launch the GPU Kernel here
   vecAdd<<<DimGrid, DimBlock>>>(deviceInput1, deviceInput2, deviceOutput, sizeVars);  
