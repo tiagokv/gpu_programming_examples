@@ -50,6 +50,9 @@ int main(int argc, char **argv) {
           " x ", deviceProp.maxGridSize[1], " x ",
           deviceProp.maxGridSize[2]);
     wbLog(TRACE, " Warp size: ", deviceProp.warpSize);
+
+    //added
+    wbLog(TRACE, "Max Threads per Block: ", deviceProp.maxThreadsPerBlock );
   }
 
   wbTime_stop(GPU, "Getting GPU Data."); //@@ stop the timer
