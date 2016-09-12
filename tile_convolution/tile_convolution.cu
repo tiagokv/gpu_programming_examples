@@ -20,7 +20,8 @@
 #define clamp(x,start,end) min(max(x, start), end)
 
 //@@ INSERT CODE HERE
-__global__ void applyConvolution(float * inputImage, const float * __restrict__ convKernel, float* outputImage, int inputImageRows, int inputImageColumns, int inputImageChannels,
+
+__global__ void applyConvolution2d(float * inputImage, const float * __restrict__ convKernel, float* outputImage, int inputImageRows, int inputImageColumns, int inputImageChannels,
                                                                                                            int outputImageRows, int outputImageColumns){
 
   // There are differences to take care for convolutions:
@@ -33,42 +34,33 @@ __global__ void applyConvolution(float * inputImage, const float * __restrict__ 
   int input_row = output_row - MASK_RADIUS;
   int input_col = output_col - MASK_RADIUS;
 
-  __shared__ float s_inpImage[BLOCK_WIDTH][BLOCK_WIDTH][CHANNEL_RGB];
+  __shared__ float s_inpImage[BLOCK_WIDTH][BLOCK_WIDTH];
 
-  if( (input_row >= 0 && input_row < inputImageRows) && (input_col >= 0 && input_col <= inputImageColumns) )
-    for(int channel=0;channel<CHANNEL_RGB;channel++){
-      s_inpImage[threadIdx.y][threadIdx.x][channel] = inputImage[input_row*inputImageColumns*CHANNEL_RGB + input_col*CHANNEL_RGB + channel];
-    }
-  else{
-    for(int channel=0;channel<CHANNEL_RGB;channel++){
-      s_inpImage[threadIdx.y][threadIdx.x][channel] = 0.0;
-    }
-  }
-
-  __syncthreads();
-
-  float sum[CHANNEL_RGB];
-  for(int channel=0;channel<CHANNEL_RGB;channel++){
-    sum[channel] = 0.0;
-  }
-
-  if( threadIdx.y < O_TILE_WIDTH && threadIdx.x < O_TILE_WIDTH ){
-    for(int channel=0; channel < CHANNEL_RGB; channel++){
-      //sum of neighbors in a radius
-      for(int y=0;y<MASK_WIDTH;y++){
-        for(int x=0;x<MASK_WIDTH;x++){
-            sum[channel] += s_inpImage[y+threadIdx.y][x+threadIdx.x][channel]*convKernel[y * MASK_WIDTH + x];
-        }
-      }
+  for(int channel=0; channel < CHANNEL_RGB; channel++){
+    if( (input_row >= 0 && input_row < inputImageRows) && (input_col >= 0 && input_col < inputImageColumns) )
+      s_inpImage[threadIdx.y][threadIdx.x] = inputImage[input_row*inputImageColumns*CHANNEL_RGB + input_col*CHANNEL_RGB + channel];
+    else{
+      s_inpImage[threadIdx.y][threadIdx.x] = 0.0;
     }
 
     __syncthreads();
-    if( (output_row < outputImageRows) && (output_col < outputImageColumns) ){
-      for(int channel=0;channel<CHANNEL_RGB;channel++){
-        outputImage[output_row*outputImageColumns*CHANNEL_RGB + output_col*CHANNEL_RGB + channel] = sum[channel];//clamp(sum[channel],0.0,1.0);
-      }
-    }
 
+    float sum = 0.0;
+
+    if( threadIdx.y < O_TILE_WIDTH && threadIdx.x < O_TILE_WIDTH ){
+      //sum of neighbors in a radius
+      for(int y=0;y<MASK_WIDTH;y++){
+        for(int x=0;x<MASK_WIDTH;x++){
+            sum += s_inpImage[y+threadIdx.y][x+threadIdx.x]*convKernel[y * MASK_WIDTH + x];
+        }
+      }
+
+      if( (output_row < outputImageRows) && (output_col < outputImageColumns) ){
+        outputImage[output_row*outputImageColumns*CHANNEL_RGB + output_col*CHANNEL_RGB + channel] = sum;//clamp(sum[channel],0.0,1.0);
+      }
+
+    }
+    __syncthreads();
   }
 
 } 
@@ -140,7 +132,7 @@ int main(int argc, char* argv[]) {
                  1);
     dim3 DimBlock(BLOCK_WIDTH,BLOCK_WIDTH,1);
 
-    applyConvolution<<<DimGrid,DimBlock>>>(deviceInputImageData, deviceMaskData, deviceOutputImageData, imageHeight, imageWidth, imageChannels,
+    applyConvolution2d<<<DimGrid,DimBlock>>>(deviceInputImageData, deviceMaskData, deviceOutputImageData, imageHeight, imageWidth, imageChannels,
                                                                                                         imageHeight, imageWidth);
     wbTime_stop(Compute, "Doing the computation on the GPU");
 
