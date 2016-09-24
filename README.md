@@ -1,6 +1,6 @@
 # Heterogenous Parallel Programming (GPU)
 
-This repo was created for sharing the courseworks from the Heterogenous Parallel Programming that can be found in this [site](http://webgpu.com/), even though the course is deprecated and no longer available in Coursera (I downloaded the videos to my pc).
+This repo was created for sharing the courseworks from the Heterogenous Parallel Programming that can be found in this ~~[site](http://webgpu.com/)~~ [repository](https://github.com/abduld/WebGpu), even though the course is deprecated and no longer available in Coursera (I downloaded the videos to my pc).
 
 For the purpose of learning Docker, I created a Dockerfile to instantiate a development environment with the prerequisites, which is basically this library in this [repository](https://github.com/abduld/libwb). I use [nvidia-docker](https://github.com/NVIDIA/nvidia-docker) plugin to instantiate the GPU dependent containers. You will see within the Dockerfile that is based in the Ubuntu 14.04 and CUDA 7.5, you should change it to what you have installed in your host.
 
