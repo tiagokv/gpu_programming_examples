@@ -58,9 +58,10 @@ __global__ void matrixMultiplyShared(float *A, float *B, float *C,
 
 void loadBestLaunchKernelConfig(dim3* dimGrid, dim3* DimBlock){
 
-  
+  cudaDeviceProp deviceProp;
+  cudaGetDeviceProperties(&deviceProp, dev);
 
-  
+  deviceProp.maxThreadsPerBlock
 }
 
 

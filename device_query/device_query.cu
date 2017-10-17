@@ -34,6 +34,8 @@ int main(int argc, char **argv) {
       }
     }
 
+
+
     wbLog(TRACE, "Device ", dev, " name: ", deviceProp.name);
     wbLog(TRACE, " Computational Capabilities: ", deviceProp.major, ".",
           deviceProp.minor);
@@ -53,6 +55,7 @@ int main(int argc, char **argv) {
 
     //added
     wbLog(TRACE, "Max Threads per Block: ", deviceProp.maxThreadsPerBlock );
+    wbLog(TRACE, "Device overlap able ", deviceProp.deviceOverlap);
   }
 
   wbTime_stop(GPU, "Getting GPU Data."); //@@ stop the timer
